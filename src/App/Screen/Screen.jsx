@@ -22,6 +22,10 @@ class vector {
   scale(num) {
     return new vector(this.x * num, this.y * num);
   }
+
+  unit() {
+    return new vector(this.x / this.magnitude(), this.y / this.magnitude());
+  }
 }
 
 export default function Screen() {
@@ -37,6 +41,33 @@ export default function Screen() {
     new vector(Math.sin(Math.PI / 6), Math.cos(Math.PI / 6)),
   ]);
 
+  function align(current, other) {
+    let power = 0.5;
+    let next = current.add(other.scale(power)).unit();
+    return next;
+  }
+
+  function changeDir() {
+    const range = 200;
+    let newDirs = directions.slice();
+    for (let i = 0; i < boids.length; ++i) {
+      for (let j = 0; j < boids.length; ++j) {
+        if (j == i) continue;
+        let delta = boids[i].add(boids[j].scale(-1));
+        if (delta.magnitude() <= Math.pow(range, 2)) {
+          delta = delta.unit();
+          let cos = delta.dot(boids[i]);
+          if (cos >= -Math.sqrt(3) / 2) {
+            console.log(cos);
+            newDirs[i] = align(boids[i], boids[j]);
+          }
+        }
+      }
+    }
+
+    setDirections(newDirs);
+  }
+
   function changePos() {
     let newBoids = boids.slice();
 
@@ -50,10 +81,14 @@ export default function Screen() {
     setBoids(newBoids);
   }
 
+  function render() {
+    changeDir();
+    changePos();
+  }
+
   useEffect(() => {
-    // const interval2 = setTimeout(changeDir, 16);
-    const interval = setTimeout(changePos, 100);
-    return () => [clearTimeout(interval)];
+    const interval = setTimeout(render, 16);
+    return () => clearTimeout(interval);
   }, [boids]);
 
   useEffect(() => {
@@ -126,13 +161,14 @@ function RemoveButton({ onRemove }) {
 }
 
 function Arrow({ pos, dir }) {
+  let offset = -25;
   return (
     <div
       className="Arrow"
       style={{
-        top: pos.x,
-        left: pos.y,
-        transform: `rotate(${Math.asin(dir.x)}rad)`,
+        top: pos.x + offset,
+        left: pos.y + offset,
+        transform: `rotate(${Math.atan2(dir.x, dir.y)}rad)`,
       }}
     ></div>
   );
