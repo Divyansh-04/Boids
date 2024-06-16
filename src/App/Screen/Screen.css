@@ -1,0 +1,44 @@
+.Screen {
+  display: flex;
+  flex-direction: column;
+  margin: 5rem auto;
+  width: 90vw;
+}
+
+.Header {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 90vw;
+  background-color: rgb(50, 50, 50);
+  height: 5vh;
+  min-height: 2rem;
+}
+
+button {
+  padding: 0.2rem 0.4rem;
+  background-color: black;
+  color: rgb(227, 132, 255);
+}
+
+.Box {
+  position: relative;
+  overflow: hidden;
+  background-color: black;
+  height: 90vh;
+  min-height: 30rem;
+}
+
+.Arrow {
+  position: absolute;
+  /* background-image: url("../../assets/Arrowhead.png"); */
+
+  margin: 15px;
+
+  /* background-color: blue; */
+
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+
+  border-left: 25px solid rgb(255, 163, 253);
+}

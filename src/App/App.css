@@ -1,0 +1,47 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  background-color: rgb(25, 24, 37);
+}
+
+h1,
+h2 {
+  color: rgb(134, 93, 255);
+  text-align: center;
+  margin: 3rem 2rem 1rem;
+}
+
+p {
+  color: rgb(227, 132, 255);
+  max-width: 85vw;
+  margin: 1rem auto;
+  font-size: 1.5rem;
+}
+
+main {
+  justify-content: space-around;
+}
+
+article {
+  margin: 4rem 10rem;
+  font-size: 1.5rem;
+  width: 80%;
+}
+
+ol {
+  display: flex;
+  gap: 5rem;
+  justify-content: space-evenly;
+  margin-top: 2rem;
+  color: rgb(134, 93, 255);
+
+  /* list-style-type: decimal; */
+}
+
+strong {
+  color: rgb(134, 93, 255);
+}
