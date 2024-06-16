@@ -42,13 +42,14 @@ export default function Screen() {
   ]);
 
   function align(current, other) {
-    let power = 0.5;
+    let power = 0.25;
     let next = current.add(other.scale(power)).unit();
+    console.log(next);
     return next;
   }
 
   function changeDir() {
-    const range = 200;
+    const range = 100;
     let newDirs = directions.slice();
     for (let i = 0; i < boids.length; ++i) {
       for (let j = 0; j < boids.length; ++j) {
@@ -58,8 +59,7 @@ export default function Screen() {
           delta = delta.unit();
           let cos = delta.dot(boids[i]);
           if (cos >= -Math.sqrt(3) / 2) {
-            console.log(cos);
-            newDirs[i] = align(boids[i], boids[j]);
+            newDirs[i] = align(directions[i], directions[j]);
           }
         }
       }
