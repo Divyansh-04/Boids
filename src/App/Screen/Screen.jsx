@@ -24,7 +24,10 @@ class vector {
   }
 
   unit() {
-    return new vector(this.x / this.magnitude(), this.y / this.magnitude());
+    return new vector(
+      this.x / Math.sqrt(this.magnitude()),
+      this.y / Math.sqrt(this.magnitude())
+    );
   }
 }
 
@@ -41,28 +44,57 @@ export default function Screen() {
     new vector(Math.sin(Math.PI / 6), Math.cos(Math.PI / 6)),
   ]);
 
+  function separate(currDir, currPos, otherPos) {
+    let power = 5;
+    let delta = currPos.add(otherPos.scale(-1)); //other to curr;
+    if (delta.magnitude() == 0) return currDir;
+    console.log(delta);
+    console.log(
+      currDir,
+      currDir.add(delta.scale(power / delta.magnitude())).unit()
+    );
+    return currDir.add(delta.scale(power / delta.magnitude())).unit();
+  }
+
   function align(current, other) {
-    let power = 0.25;
-    let next = current.add(other.scale(power)).unit();
-    console.log(next);
-    return next;
+    let power = 0.1;
+    return current.add(other.scale(power)).unit();
+  }
+
+  function cohesion(currDir, currPos, averagePos) {
+    let power = 0.0005;
+    averagePos = new vector(
+      averagePos.x / averagePos.size,
+      averagePos.y / averagePos.size
+    );
+
+    let delta = averagePos.add(currPos.scale(-1)); // curr to average
+    if (delta.magnitude() == 0) return currDir;
+    return currDir.add(delta.scale(power)).unit();
   }
 
   function changeDir() {
     const range = 100;
     let newDirs = directions.slice();
     for (let i = 0; i < boids.length; ++i) {
+      let averagePos = { x: 0, y: 0, size: 0 };
       for (let j = 0; j < boids.length; ++j) {
         if (j == i) continue;
-        let delta = boids[i].add(boids[j].scale(-1));
+        let delta = boids[j].add(boids[i].scale(-1)); // j-i
         if (delta.magnitude() <= Math.pow(range, 2)) {
           delta = delta.unit();
-          let cos = delta.dot(boids[i]);
+          let cos = delta.dot(directions[i]);
           if (cos >= -Math.sqrt(3) / 2) {
-            newDirs[i] = align(directions[i], directions[j]);
+            newDirs[i] = align(newDirs[i], directions[j]);
+            newDirs[i] = separate(newDirs[i], boids[i], boids[j]);
+            averagePos.x += boids[j].x;
+            averagePos.y += boids[j].y;
+            ++averagePos.size;
           }
         }
       }
+      if (averagePos.size)
+        newDirs[i] = cohesion(newDirs[i], boids[i], averagePos);
     }
 
     setDirections(newDirs);
@@ -136,7 +168,7 @@ export default function Screen() {
   }
 
   const arrows = boids.map((atr, index) => {
-    return <Arrow pos={atr} key={index} dir={directions[index]} />;
+    return <Arrow pos={atr} key={index} dir={directions[index]} k={index} />;
   });
 
   return (
@@ -160,8 +192,9 @@ function RemoveButton({ onRemove }) {
   return <button onClick={onRemove}>Remove Boid</button>;
 }
 
-function Arrow({ pos, dir }) {
+function Arrow({ pos, dir, k }) {
   let offset = -25;
+  // let color = ["red", "cyan", "pink", "green"];
   return (
     <div
       className="Arrow"
@@ -169,6 +202,7 @@ function Arrow({ pos, dir }) {
         top: pos.x + offset,
         left: pos.y + offset,
         transform: `rotate(${Math.atan2(dir.x, dir.y)}rad)`,
+        // borderLeftColor: color[k % color.length],
       }}
     ></div>
   );
