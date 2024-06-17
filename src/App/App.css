@@ -5,18 +5,19 @@
 }
 
 :root {
-  background-color: rgb(25, 24, 37);
+  background-color: rgb(40, 40, 40);
 }
 
 h1,
 h2 {
-  color: rgb(134, 93, 255);
+  color: white;
   text-align: center;
+  font-size: 3rem;
   margin: 3rem 2rem 1rem;
 }
 
 p {
-  color: rgb(227, 132, 255);
+  color: lightcyan;
   max-width: 85vw;
   margin: 1rem auto;
   font-size: 1.5rem;
@@ -37,11 +38,11 @@ ol {
   gap: 5rem;
   justify-content: space-evenly;
   margin-top: 2rem;
-  color: rgb(134, 93, 255);
+  color: lightblue;
 
   /* list-style-type: decimal; */
 }
 
 strong {
-  color: rgb(134, 93, 255);
+  color: cyan;
 }

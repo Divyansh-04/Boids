@@ -39,25 +39,18 @@ export default function Screen() {
   });
 
   const velocity = 5;
-  const [boids, setBoids] = useState([new vector(10, 20)]);
-  const [directions, setDirections] = useState([
-    new vector(Math.sin(Math.PI / 6), Math.cos(Math.PI / 6)),
-  ]);
+  const [boids, setBoids] = useState([]);
+  const [directions, setDirections] = useState([]);
 
   function separate(currDir, currPos, otherPos) {
     let power = 5;
     let delta = currPos.add(otherPos.scale(-1)); //other to curr;
     if (delta.magnitude() == 0) return currDir;
-    console.log(delta);
-    console.log(
-      currDir,
-      currDir.add(delta.scale(power / delta.magnitude())).unit()
-    );
     return currDir.add(delta.scale(power / delta.magnitude())).unit();
   }
 
   function align(current, other) {
-    let power = 0.1;
+    let power = 0.08;
     return current.add(other.scale(power)).unit();
   }
 
@@ -86,7 +79,15 @@ export default function Screen() {
           let cos = delta.dot(directions[i]);
           if (cos >= -Math.sqrt(3) / 2) {
             newDirs[i] = align(newDirs[i], directions[j]);
+
             newDirs[i] = separate(newDirs[i], boids[i], boids[j]);
+          }
+        }
+
+        if (delta.magnitude() <= Math.pow(5 * range, 2)) {
+          delta = delta.unit();
+          let cos = delta.dot(directions[i]);
+          if (Math.abs(cos) >= 1 / 2) {
             averagePos.x += boids[j].x;
             averagePos.y += boids[j].y;
             ++averagePos.size;
@@ -124,6 +125,11 @@ export default function Screen() {
   }, [boids]);
 
   useEffect(() => {
+    const interval = setTimeout(handleAdd10(), 5000);
+    return () => clearTimeout(interval);
+  }, []);
+
+  useEffect(() => {
     const updateDimensions = () => {
       if (containerRef.current) {
         setDimensions({
@@ -158,6 +164,30 @@ export default function Screen() {
     setDirections(nextDirs);
   }
 
+  function handleAdd10() {
+    let temp = [];
+    for (let i = 0; i < 10; ++i) {
+      temp[i] = new vector(
+        Math.floor(Math.random() * dimensions.height),
+        Math.floor(Math.random() * dimensions.width)
+      );
+    }
+
+    const nextBoids = [...boids, ...temp];
+    setBoids(nextBoids);
+
+    for (let i = 0; i < 10; ++i) {
+      let xComponent = Math.sin(Math.random() * 2 * Math.PI);
+      let yComponent =
+        Math.sqrt(1 - xComponent * xComponent) *
+        (Math.floor(Math.random() * 2) % 2 ? 1 : -1);
+      temp[i] = new vector(xComponent, yComponent);
+    }
+
+    const nextDirs = [...directions, ...temp];
+    setDirections(nextDirs);
+  }
+
   function handleRemove() {
     if (boids.length === 0) return;
     const nextBoids = [...boids.slice(0, boids.length - 1)];
@@ -167,21 +197,59 @@ export default function Screen() {
     setDirections(nextDirs);
   }
 
+  function handleRemove10() {
+    if (boids.length === 0) return;
+    const nextBoids = [
+      ...boids.slice(0, boids.length - Math.min(boids.length, 10)),
+    ];
+    setBoids(nextBoids);
+
+    const nextDirs = [
+      ...directions.slice(0, directions.length - Math.min(boids.length, 10)),
+    ];
+    setDirections(nextDirs);
+  }
+
   const arrows = boids.map((atr, index) => {
     return <Arrow pos={atr} key={index} dir={directions[index]} k={index} />;
   });
 
   return (
     <div className="Screen">
-      <div className="Header">
-        <AddButton onAdd={handleAdd} />
-        <RemoveButton onRemove={handleRemove} />
-      </div>
+      <Header
+        handleAdd={handleAdd}
+        handleRemove={handleRemove}
+        handleAdd10={handleAdd10}
+        handleRemove10={handleRemove10}
+      />
       <div className="Box" ref={containerRef}>
         {arrows}
       </div>
     </div>
   );
+}
+
+function Header({ handleAdd, handleRemove, handleAdd10, handleRemove10 }) {
+  return (
+    <div className="Header">
+      <>
+        <AddButton onAdd={handleAdd} />
+        <Add10Button onAdd={handleAdd10} />
+      </>
+      <>
+        <RemoveButton onRemove={handleRemove} />
+        <Remove10Button onRemove={handleRemove10} />
+      </>
+    </div>
+  );
+}
+
+function Add10Button({ onAdd }) {
+  return <button onClick={onAdd}>+10</button>;
+}
+
+function Remove10Button({ onRemove }) {
+  return <button onClick={onRemove}>-10</button>;
 }
 
 function AddButton({ onAdd }) {
@@ -194,7 +262,7 @@ function RemoveButton({ onRemove }) {
 
 function Arrow({ pos, dir, k }) {
   let offset = -25;
-  // let color = ["red", "cyan", "pink", "green"];
+  let color = ["red", "cyan", "pink", "green"];
   return (
     <div
       className="Arrow"
