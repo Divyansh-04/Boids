@@ -12,28 +12,32 @@
 .Screen {
   display: flex;
   flex-direction: column;
-  width: 100vw;
+  width: 100%;
+  border: 5px solid #222;
+  /* border-radius: 20px; */
 }
 
-.Header {
+.ControlPanel {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  width: 100vw;
+  width: 100%;
   background-color: rgb(50, 50, 50);
-  height: 5vh;
-  min-height: 2rem;
+
+  /* border-radius: 50px; */
 }
 
-button {
-  padding: 0.2rem 0.4rem;
-  background-color: black;
-  color: cyan;
+.buttonContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  min-height: 13rem;
 }
 
 .Box {
   position: relative;
   overflow: hidden;
+  /* border-radius: 10px; */
   background-color: rgb(30, 30, 30);
   height: 90vh;
   min-height: 30rem;

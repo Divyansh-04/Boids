@@ -1,5 +1,34 @@
 import { useState, useRef, useEffect } from "react";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
 import "./Screen.css";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { AddBox, Delete, Today } from "@mui/icons-material";
+import Box from "@mui/material/Box";
+import { AllOut, Sync, GroupWork } from "@mui/icons-material";
+import Slider from "@mui/material/Slider";
+import Switch from "@mui/material/Switch";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import IconButton from "@mui/material/IconButton";
+import SettingsBackupRestoreIcon from "@mui/icons-material/SettingsBackupRestore";
+import Merge from "@mui/icons-material/Merge";
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      light: "#ce93d8",
+      main: "#aa00ff",
+      dark: "#7b1fa2",
+      contrastText: "#F3E5F5",
+    },
+    secondary: {
+      light: "#ef5350",
+      main: "#e53935",
+      dark: "#c62828",
+      contrastText: "#FFEBEE",
+    },
+  },
+});
 
 class vector {
   constructor(x, y) {
@@ -42,20 +71,37 @@ export default function Screen() {
   const [boids, setBoids] = useState([]);
   const [directions, setDirections] = useState([]);
 
-  function separate(currDir, currPos, otherPos) {
-    let power = 5;
+  const [separationCoefficient, setSeparationCoefficient] = useState(1);
+  const [alignmentCoefficient, setAlignmentCoefficient] = useState(1);
+  const [cohesionCoefficient, setCohesionCoefficient] = useState(1);
+
+  const [toggleSeparation, setToggleSeparation] = useState(true);
+  const [toggleAlignment, setToggleAlignment] = useState(true);
+  const [toggleCohesion, setToggleCohesion] = useState(true);
+
+  function toDefault() {
+    setAlignmentCoefficient(1);
+    setCohesionCoefficient(1);
+    setSeparationCoefficient(1);
+    setToggleAlignment(true);
+    setToggleCohesion(true);
+    setToggleSeparation(true);
+  }
+
+  function separate(currDir, currPos, otherPos, coeff = separationCoefficient) {
+    let power = 5 * coeff;
     let delta = currPos.add(otherPos.scale(-1)); //other to curr;
     if (delta.magnitude() == 0) return currDir;
     return currDir.add(delta.scale(power / delta.magnitude())).unit();
   }
 
-  function align(current, other) {
-    let power = 0.08;
+  function align(current, other, coeff = alignmentCoefficient) {
+    let power = 0.08 * coeff;
     return current.add(other.scale(power)).unit();
   }
 
-  function cohesion(currDir, currPos, averagePos) {
-    let power = 0.0005;
+  function cohesion(currDir, currPos, averagePos, coeff = cohesionCoefficient) {
+    let power = 0.0005 * coeff;
     averagePos = new vector(
       averagePos.x / averagePos.size,
       averagePos.y / averagePos.size
@@ -78,9 +124,9 @@ export default function Screen() {
           delta = delta.unit();
           let cos = delta.dot(directions[i]);
           if (cos >= -Math.sqrt(3) / 2) {
-            newDirs[i] = align(newDirs[i], directions[j]);
-
-            newDirs[i] = separate(newDirs[i], boids[i], boids[j]);
+            if (toggleAlignment) newDirs[i] = align(newDirs[i], directions[j]);
+            if (toggleSeparation)
+              newDirs[i] = separate(newDirs[i], boids[i], boids[j]);
           }
         }
 
@@ -94,7 +140,7 @@ export default function Screen() {
           }
         }
       }
-      if (averagePos.size)
+      if (averagePos.size && toggleCohesion)
         newDirs[i] = cohesion(newDirs[i], boids[i], averagePos);
     }
 
@@ -125,7 +171,7 @@ export default function Screen() {
   }, [boids]);
 
   useEffect(() => {
-    const interval = setTimeout(handleAdd10(), 5000);
+    const interval = setTimeout(handleAdd10, 1500);
     return () => clearTimeout(interval);
   }, []);
 
@@ -214,50 +260,307 @@ export default function Screen() {
     return <Arrow pos={atr} key={index} dir={directions[index]} k={index} />;
   });
 
+  function onSepChange(event, newValue) {
+    setSeparationCoefficient(newValue);
+  }
+  function onAlignChange(event, newValue) {
+    setAlignmentCoefficient(newValue);
+  }
+  function onCohesionChange(event, newValue) {
+    setCohesionCoefficient(newValue);
+  }
+
   return (
-    <div className="Screen">
-      <Header
-        handleAdd={handleAdd}
-        handleRemove={handleRemove}
-        handleAdd10={handleAdd10}
-        handleRemove10={handleRemove10}
-      />
-      <div className="Box" ref={containerRef}>
-        {arrows}
+    <ThemeProvider theme={theme}>
+      <div className="Screen">
+        <ControlPanel
+          handleAdd={handleAdd}
+          handleRemove={handleRemove}
+          handleAdd10={handleAdd10}
+          handleRemove10={handleRemove10}
+          toDefault={toDefault}
+          separationCoefficient={separationCoefficient}
+          alignmentCoefficient={alignmentCoefficient}
+          cohesionCoefficient={cohesionCoefficient}
+          onSepChange={onSepChange}
+          onAlignChange={onAlignChange}
+          onCohesionChange={onCohesionChange}
+          toggleAlignment={toggleAlignment}
+          toggleCohesion={toggleCohesion}
+          toggleSeparation={toggleSeparation}
+          setToggleSeparation={setToggleSeparation}
+          setToggleAlignment={setToggleAlignment}
+          setToggleCohesion={setToggleCohesion}
+        />
+        <div className="Box" ref={containerRef}>
+          {arrows}
+        </div>
+      </div>
+    </ThemeProvider>
+  );
+}
+
+function ControlPanel({
+  handleAdd,
+  handleRemove,
+  handleAdd10,
+  handleRemove10,
+  toDefault,
+  onSepChange,
+  onAlignChange,
+  onCohesionChange,
+  separationCoefficient,
+  alignmentCoefficient,
+  cohesionCoefficient,
+  toggleAlignment,
+  toggleCohesion,
+  toggleSeparation,
+  setToggleSeparation,
+  setToggleAlignment,
+  setToggleCohesion,
+}) {
+  return (
+    <div className="ControlPanel">
+      <div className="buttonContainer">
+        <div>
+          <AddButton onAdd={handleAdd} />
+          <Add10Button onAdd={handleAdd10} />
+        </div>
+        <div>
+          <RemoveButton onRemove={handleRemove} />
+          <Remove10Button onRemove={handleRemove10} />
+        </div>
+        <div>
+          <ToDefault toDefault={toDefault} />
+        </div>
+      </div>
+      <div className="switches">
+        <ToggleSep checked={toggleSeparation} onChange={setToggleSeparation} />
+        <ToggleAlign checked={toggleAlignment} onChange={setToggleAlignment} />
+        <ToggleCohesion checked={toggleCohesion} onChange={setToggleCohesion} />
+      </div>
+      <div className="sliders">
+        <SeparationSlider
+          aria-label="Volume"
+          defaultValue={1}
+          handleChange={onSepChange}
+          value={separationCoefficient}
+        />
+        <AlignmentSlider
+          aria-label="Volume"
+          defaultValue={1}
+          handleChange={onAlignChange}
+          value={alignmentCoefficient}
+        />
+        <CohesionSlider
+          aria-label="Volume"
+          defaultValue={1}
+          handleChange={onCohesionChange}
+          value={cohesionCoefficient}
+        />
       </div>
     </div>
   );
 }
 
-function Header({ handleAdd, handleRemove, handleAdd10, handleRemove10 }) {
+function ToggleSep({ checked, onChange }) {
   return (
-    <div className="Header">
-      <>
-        <AddButton onAdd={handleAdd} />
-        <Add10Button onAdd={handleAdd10} />
-      </>
-      <>
-        <RemoveButton onRemove={handleRemove} />
-        <Remove10Button onRemove={handleRemove10} />
-      </>
-    </div>
+    <Box sx={{ display: "flex", alignItems: "center", marginBottom: 2 }}>
+      <IconButton
+        sx={{ color: "#ce93d8" }}
+        aria-label="Toggle Separation"
+        onClick={() => onChange(!checked)}
+      >
+        {<AllOut sx={{ color: !checked && "#ef5350" }} />}
+      </IconButton>
+      <FormControlLabel
+        sx={{ marginLeft: 1, color: "#ce93d8" }}
+        control={
+          <Switch
+            checked={checked}
+            onChange={() => onChange(!checked)}
+            inputProps={{ "aria-label": "Toggle Separation" }}
+          />
+        }
+        label="Separation"
+      />
+    </Box>
+  );
+}
+
+function ToggleAlign({ checked, onChange }) {
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", marginBottom: 2 }}>
+      <IconButton
+        sx={{ color: "#ce93d8" }}
+        aria-label="Toggle Alignment"
+        onClick={() => onChange(!checked)}
+      >
+        {<Merge sx={{ color: !checked && "#ef5350" }} />}
+      </IconButton>
+      <FormControlLabel
+        sx={{ marginLeft: 1, color: "#ce93d8" }}
+        control={
+          <Switch
+            checked={checked}
+            onChange={() => onChange(!checked)}
+            inputProps={{ "aria-label": "Toggle Alignment" }}
+          />
+        }
+        label="Alignment"
+      />
+    </Box>
+  );
+}
+
+function ToggleCohesion({ checked, onChange }) {
+  return (
+    <Box sx={{ display: "flex", alignItems: "center", marginBottom: 2 }}>
+      <IconButton
+        sx={{ color: "#ce93d8" }}
+        aria-label="Toggle Cohesion"
+        onClick={() => onChange(!checked)}
+      >
+        {<Sync sx={{ color: !checked && "#ef5350" }} />}
+      </IconButton>
+      <FormControlLabel
+        sx={{ marginLeft: 1, color: "#ce93d8" }}
+        control={
+          <Switch
+            checked={checked}
+            onChange={() => onChange(!checked)}
+            inputProps={{ "aria-label": "Toggle Cohesion" }}
+          />
+        }
+        label="Cohesion"
+      />
+    </Box>
+  );
+}
+
+function SeparationSlider({ handleChange, value = 1 }) {
+  return (
+    <Box sx={{ width: 400 }}>
+      <Typography id="separation-slider-label" gutterBottom>
+        <AllOut sx={{ marginRight: "0.5em", marginTop: "0.35em" }} /> Separation
+      </Typography>
+      <Slider
+        aria-labelledby="separation-slider-label"
+        value={value}
+        onChange={handleChange}
+        step={0.00001}
+        valueLabelDisplay="auto"
+        min={-10}
+        max={10}
+      />
+    </Box>
+  );
+}
+
+function AlignmentSlider({ handleChange, value = 1 }) {
+  return (
+    <Box sx={{ width: 400 }}>
+      <Typography id="alignment-slider-label" gutterBottom>
+        <Merge sx={{ marginRight: "0.5em" }} /> Alignment
+      </Typography>
+      <Slider
+        aria-labelledby="alignment-slider-label"
+        value={value}
+        onChange={handleChange}
+        step={0.00001}
+        valueLabelDisplay="auto"
+        min={-10}
+        max={10}
+      />
+    </Box>
+  );
+}
+
+function CohesionSlider({ handleChange, value = 1 }) {
+  return (
+    <Box sx={{ width: 400 }}>
+      <Typography id="cohesion-slider-label" gutterBottom>
+        <Sync sx={{ marginRight: "0.5em" }} /> Cohesion
+      </Typography>
+      <Slider
+        aria-labelledby="cohesion-slider-label"
+        value={value}
+        onChange={handleChange}
+        step={0.00001}
+        valueLabelDisplay="auto"
+        min={-10}
+        max={10}
+      />
+    </Box>
   );
 }
 
 function Add10Button({ onAdd }) {
-  return <button onClick={onAdd}>+10</button>;
+  return (
+    <Button
+      variant="outlined"
+      color="primary"
+      onClick={onAdd}
+      sx={{ minWidth: "4rem" }}
+    >
+      +10
+    </Button>
+  );
 }
 
 function Remove10Button({ onRemove }) {
-  return <button onClick={onRemove}>-10</button>;
+  return (
+    <Button
+      variant="outlined"
+      color="secondary"
+      onClick={onRemove}
+      sx={{ minWidth: "4rem" }}
+    >
+      -10
+    </Button>
+  );
 }
 
 function AddButton({ onAdd }) {
-  return <button onClick={onAdd}>Add Boid</button>;
+  return (
+    <Button
+      variant="contained"
+      color="primary"
+      startIcon={<AddBox />}
+      onClick={onAdd}
+      sx={{ minWidth: "10rem" }}
+    >
+      Add Boid
+    </Button>
+  );
 }
 
 function RemoveButton({ onRemove }) {
-  return <button onClick={onRemove}>Remove Boid</button>;
+  return (
+    <Button
+      variant="contained"
+      color="secondary"
+      startIcon={<Delete />}
+      onClick={onRemove}
+      sx={{ minWidth: "10rem" }}
+    >
+      Remove Boid
+    </Button>
+  );
+}
+
+function ToDefault({ toDefault }) {
+  return (
+    <Button
+      variant="outlined"
+      color="primary"
+      startIcon={<SettingsBackupRestoreIcon />}
+      onClick={toDefault}
+      sx={{ minWidth: "14rem" }}
+    >
+      Reset to Default
+    </Button>
+  );
 }
 
 function Arrow({ pos, dir, k }) {
@@ -270,7 +573,7 @@ function Arrow({ pos, dir, k }) {
         top: pos.x + offset,
         left: pos.y + offset,
         transform: `rotate(${Math.atan2(dir.x, dir.y)}rad)`,
-        // borderLeftColor: color[k % color.length],
+        borderLeftColor: theme.palette.primary.main,
       }}
     ></div>
   );

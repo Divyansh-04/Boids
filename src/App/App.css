@@ -8,16 +8,22 @@
   background-color: rgb(40, 40, 40);
 }
 
+section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 h1,
 h2 {
-  color: white;
+  color: #aa00ff;
   text-align: center;
   font-size: 3rem;
   margin: 3rem 2rem 1rem;
 }
 
 p {
-  color: lightcyan;
+  color: #ce93d8;
   max-width: 85vw;
   margin: 1rem auto;
   font-size: 1.5rem;
@@ -38,11 +44,20 @@ ol {
   gap: 5rem;
   justify-content: space-evenly;
   margin-top: 2rem;
-  color: lightblue;
+  color: #aa00ff;
 
   /* list-style-type: decimal; */
 }
 
 strong {
-  color: cyan;
+  color: #7b1fa2;
+}
+
+hr {
+  display: block;
+  height: 1px;
+  border: 0;
+  border-top: 5px solid #222;
+  /* margin: 1em 0;  */
+  padding: 0;
 }

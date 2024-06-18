@@ -47,7 +47,6 @@ export default function App() {
             </li>
           </ol>
         </article>
-
         <Screen />
       </main>
 
@@ -66,7 +65,7 @@ export default function App() {
         <p>
           Boids is only one of many experiments in what is known as the field of
           &quotswarm intelligence&quot. A key aspect of swarm intelligence
-          systems is the lack of a centralized control agent--instead each
+          systems is the lack of a centralized control agent instead each
           individual unit in the swarm follows its own defined rules, sometimes
           resulting in surprising overall behavior for the group as a whole.
         </p>
