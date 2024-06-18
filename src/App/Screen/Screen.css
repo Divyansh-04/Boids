@@ -1,0 +1,54 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root::-webkit-scrollbar {
+  width: 0px;
+  /* display: none; */
+}
+
+.Screen {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+}
+
+.Header {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100vw;
+  background-color: rgb(50, 50, 50);
+  height: 5vh;
+  min-height: 2rem;
+}
+
+button {
+  padding: 0.2rem 0.4rem;
+  background-color: black;
+  color: cyan;
+}
+
+.Box {
+  position: relative;
+  overflow: hidden;
+  background-color: rgb(30, 30, 30);
+  height: 90vh;
+  min-height: 30rem;
+}
+
+.Arrow {
+  position: absolute;
+  /* background-image: url("../../assets/Arrowhead.png"); */
+
+  margin: 15px;
+
+  /* background-color: blue; */
+
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+
+  border-left: 25px solid lightcyan;
+}
