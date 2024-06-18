@@ -124,10 +124,10 @@ export default function Screen() {
     return () => clearTimeout(interval);
   }, [boids]);
 
-  // useEffect(() => {
-  //   const interval = setTimeout(handleAdd10(), 5000);
-  //   return () => clearTimeout(interval);
-  // }, []);
+  useEffect(() => {
+    const interval = setTimeout(handleAdd10(), 5000);
+    return () => clearTimeout(interval);
+  }, []);
 
   useEffect(() => {
     const updateDimensions = () => {
